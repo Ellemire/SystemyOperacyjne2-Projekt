@@ -22,6 +22,6 @@ Sekcje krytyczne: podnoszenie i opuszczanie widelców
 1. Zainstaluj kompilator g++, jeżeli jeszcze nie jest zainstalowany.
 2. Pobierz ten projekt.
 3. Znajdź katalog projektu "DiningPhilosophersProblem" w terminalu.
-4. Skompiluj kod przy użyciu g++:   `g++ main.cpp -o main.exe`
-5. Uruchom program:                 `.\main.exe`
+4. Skompiluj kod przy użyciu g++: `g++ main.cpp -o main.exe`
+5. Uruchom program: `.\main.exe`
 6. Alternatywnie (Linux): Możesz wykorzystać komendę "make" (mam nadzieję).
