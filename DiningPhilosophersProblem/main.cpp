@@ -4,6 +4,7 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include <memory> // Dodaj tę linię dla std::unique_ptr
 
 using namespace std;
 
@@ -16,9 +17,8 @@ struct Fork
 	mutex fork_mutex;	// Mutex to synchronize access to fork
 };
 
-vector<Fork> forks;		// List of forks
-mutex console_mutex;	// Mutex to synchronize console output
-
+vector<unique_ptr<Fork>> forks; // List of forks (using unique_ptr)
+mutex console_mutex;            // Mutex to synchronize console output
 
 // Function to generate random integer
 int generateRandomInt()
@@ -35,128 +35,111 @@ Philosopher repeatedly think, try to eat and eat.
 When philosopher try to eat he start with trying to grab left fork then right fork in loop till he get both forks. */  
 void philosopher(int id, atomic<bool>& stop)
 {
-	int left_fork_id = id;
-	int right_fork_id = (id + 1) % NUM_PHILOSOPHERS; // To enable circle
-	bool hasLeftFork = false;
-	bool hasRightFork = false;
+    int left_fork_id = id;
+    int right_fork_id = (id + 1) % NUM_PHILOSOPHERS; // To enable circle
+    bool hasLeftFork = false;
+    bool hasRightFork = false;
 
-	while (!stop)
-	{	
-		{
-			lock_guard<mutex> lock(console_mutex);
-			cout << "Philosopher " << id << " is thinking." << endl;
-		}
-		this_thread::sleep_for(chrono::seconds(generateRandomInt()));
+    while (!stop)
+    {
+        {
+            lock_guard<mutex> lock(console_mutex);
+            cout << "Philosopher " << id << " is thinking." << endl;
+        }
+        this_thread::sleep_for(chrono::seconds(generateRandomInt()));
 
-		{
-			lock_guard<mutex> lock(console_mutex);
-			cout << "Philosopher " << id << " try to eat." << endl;
-		}
-		while (!(hasLeftFork && hasRightFork))
-		{
-			{
-				lock_guard<mutex> lock(forks[left_fork_id].fork_mutex);
-				if (forks[left_fork_id].isFree)
-				{
-					
-					{
-						lock_guard<mutex> lock(console_mutex);
-						cout << "Philosopher " << id << " grab left fork " << left_fork_id << "." << endl;
-					}
-					this_thread::sleep_for(chrono::seconds(generateRandomInt()));
-					hasLeftFork = true;
-					forks[left_fork_id].isFree = false;
-					continue;
-				}
-			}
+        {
+            lock_guard<mutex> lock(console_mutex);
+            cout << "Philosopher " << id << " try to eat." << endl;
+        }
 
-			{
-				lock_guard<mutex> lock(forks[right_fork_id].fork_mutex);
-				if (forks[right_fork_id].isFree)
-				{
-					{
-						lock_guard<mutex> lock(console_mutex);
-						cout << "Philosopher " << id << " grab right fork " << right_fork_id << "." << endl;
-					}
-					this_thread::sleep_for(chrono::seconds(generateRandomInt()));
-					hasRightFork = true;
-					forks[right_fork_id].isFree = false;
-					continue;
-				}
-			}
+        while (!(hasLeftFork && hasRightFork))
+        {
+            if (forks[left_fork_id]->isFree)
+            {
+                lock_guard<mutex> lock(forks[left_fork_id]->fork_mutex);
+                if (forks[left_fork_id]->isFree) // Double-check after locking
+                {
+                    {
+                        lock_guard<mutex> lock(console_mutex);
+                        cout << "Philosopher " << id << " grab left fork " << left_fork_id << "." << endl;
+                    }
+                    this_thread::sleep_for(chrono::seconds(generateRandomInt()));
+                    hasLeftFork = true;
+                    forks[left_fork_id]->isFree = false;
+                }
+            }
+            if (forks[right_fork_id]->isFree)
+            {
+                lock_guard<mutex> lock(forks[right_fork_id]->fork_mutex);
+                if (forks[right_fork_id]->isFree) // Double-check after locking
+                {
+                    {
+                        lock_guard<mutex> lock(console_mutex);
+                        cout << "Philosopher " << id << " grab right fork " << right_fork_id << "." << endl;
+                    }
+                    this_thread::sleep_for(chrono::seconds(generateRandomInt()));
+                    hasRightFork = true;
+                    forks[right_fork_id]->isFree = false;
+                }
+            }
+            this_thread::sleep_for(chrono::seconds(1));
+        }
 
-			std::this_thread::sleep_for(std::chrono::seconds(1));
-		}
+        {
+            lock_guard<mutex> lock(console_mutex);
+            cout << "Philosopher " << id << " is eating." << endl;
+        }
+        this_thread::sleep_for(chrono::seconds(generateRandomInt()));
 
-		{
-			lock_guard<mutex> lock(console_mutex);
-			cout << "Philosopher " << id << " is eating." << endl;
-		}
-		std::this_thread::sleep_for(std::chrono::seconds(generateRandomInt()));
+        hasLeftFork = false;
+        hasRightFork = false;
 
-		{
-			lock_guard<mutex> lock(console_mutex);
-			cout << "Philosopher " << id << " finished eating." << endl;
-		}
+        {
+            lock_guard<mutex> lock(console_mutex);
+            cout << "Philosopher " << id << " finished eating." << endl;
+        }
 
-		// Left fork release
-		{
-			lock_guard<mutex> lock(forks[left_fork_id].fork_mutex);
-			hasLeftFork = false;
-			forks[left_fork_id].isFree = true;
-			{
-				lock_guard<mutex> lock(console_mutex);
-				cout << "Philosopher " << id << " relised fork " << left_fork_id << endl;
-			}
-		}
-		// Right fork release
-		{
-			lock_guard<mutex> lock(forks[right_fork_id].fork_mutex);
-			hasRightFork = false;
-			forks[right_fork_id].isFree = true;
-			{
-				lock_guard<mutex> lock(console_mutex);
-				cout << "Philosopher " << id << " relised fork " << right_fork_id << endl;
-			}
-		}
-	}
+        // Release forks
+        {
+            lock_guard<mutex> lock(forks[left_fork_id]->fork_mutex);
+            forks[left_fork_id]->isFree = true;
+        }
+        {
+            lock_guard<mutex> lock(forks[right_fork_id]->fork_mutex);
+            forks[right_fork_id]->isFree = true;
+        }
+    }
 }
 
 int main()
 {
-	//cout << "Enter the number of philosophers: ";
-	//cin >> NUM_PHILOSOPHERS;
+    atomic<bool> stop(false);
 
-	atomic<bool> stop(false);
-	forks.reserve(NUM_PHILOSOPHERS);
+    // Initialize forks using unique_ptr
+    for (int i = 0; i < NUM_PHILOSOPHERS; ++i) {
+        forks.push_back(make_unique<Fork>());
+    }
 
-	for (int i = 0; i < NUM_PHILOSOPHERS; ++i) {
-		forks.emplace_back(Fork());
-	}
+    vector<thread> philosophers;
+    for (int i = 0; i < NUM_PHILOSOPHERS; ++i) {
+        philosophers.emplace_back(philosopher, i, ref(stop));
+        {
+            lock_guard<mutex> lock(console_mutex);
+            cout << "Philosopher " << i << " is initialized." << endl;
+        }
+    }
 
-	std::vector<std::thread> philosophers;
-	for (int i = 0; i < NUM_PHILOSOPHERS; ++i) {
-		philosophers.emplace_back(philosopher, i, std::ref(stop));
-		{
-			lock_guard<mutex> lock(console_mutex);
-			cout << "Philosopher " << i << " is inicialized." << endl;
-		}
-	}
+    // Let the philosophers run for a while
+    this_thread::sleep_for(chrono::seconds(30));
 
-	// Let the philosophers run for a while
-	std::this_thread::sleep_for(std::chrono::seconds(30));
+    // Stop the philosophers
+    stop = true;
 
-	// Stop the philosophers
-	stop = true;
-	{
-		lock_guard<mutex> lock(console_mutex);
-		cout << "Time is up." << endl;
-	}
+    // Wait for all philosophers to finish
+    for (auto& ph : philosophers) {
+        ph.join();
+    }
 
-	// Wait for all philosophers to finish
-	for (auto& ph : philosophers) {
-		ph.join();
-	}
-
-	return 0;
+    return 0;
 }
