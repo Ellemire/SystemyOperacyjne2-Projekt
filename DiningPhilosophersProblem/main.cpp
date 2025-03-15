@@ -4,11 +4,12 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
-#include <memory> // Dodaj tę linię dla std::unique_ptr
+#include <memory>
 
 using namespace std;
 
 const int NUM_PHILOSOPHERS = 5; // Number of philosophers
+int num_philosophers_eating = 0;
 
 // Structure that represents fork
 struct Fork
@@ -19,6 +20,7 @@ struct Fork
 
 vector<unique_ptr<Fork>> forks; // List of forks (using unique_ptr)
 mutex console_mutex;            // Mutex to synchronize console output
+mutex num_philosophers_eating_mutex;
 
 // Function to generate random integer
 int generateRandomInt()
@@ -39,6 +41,7 @@ void philosopher(int id, atomic<bool>& stop)
     int right_fork_id = (id + 1) % NUM_PHILOSOPHERS; // To enable circle
     bool hasLeftFork = false;
     bool hasRightFork = false;
+	bool try_to_eat = false;
 
     while (!stop)
     {
@@ -52,6 +55,25 @@ void philosopher(int id, atomic<bool>& stop)
             lock_guard<mutex> lock(console_mutex);
             cout << "Philosopher " << id << " try to eat." << endl;
         }
+		try_to_eat = true;
+
+		while (try_to_eat)
+		{
+			{
+				lock_guard<mutex> lock(num_philosophers_eating_mutex);
+				if (num_philosophers_eating < NUM_PHILOSOPHERS - 1)
+				{
+					try_to_eat = false;
+					num_philosophers_eating++;
+				}
+			}
+			this_thread::sleep_for(chrono::seconds(1));
+		}
+
+		{
+			lock_guard<mutex> lock(console_mutex);
+			cout << "Philosophers eating: " << num_philosophers_eating << endl;
+		}
 
         while (!(hasLeftFork && hasRightFork))
         {
@@ -96,8 +118,14 @@ void philosopher(int id, atomic<bool>& stop)
         hasRightFork = false;
 
         {
+			lock_guard<mutex> lock(num_philosophers_eating_mutex);
+			num_philosophers_eating--;
+		}
+
+		{
             lock_guard<mutex> lock(console_mutex);
             cout << "Philosopher " << id << " finished eating." << endl;
+			cout << "Philosophers eating: " << num_philosophers_eating << endl;
         }
 
         // Release forks
