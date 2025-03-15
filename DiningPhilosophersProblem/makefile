@@ -16,5 +16,5 @@ clean:
     rm -f main.o main.exe
 
 # Uruchomienie programu
-run: main.exe
-    ./main.exe
+run: main.exe 5
+    ./main.exe 5

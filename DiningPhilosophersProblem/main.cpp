@@ -4,12 +4,14 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
-#include <memory>
+#include <memory>	// For access to structure
+#include <cstdlib>	// For casting to int
 
 using namespace std;
 
-const int NUM_PHILOSOPHERS = 5; // Number of philosophers
-int num_philosophers_eating = 0;
+const int TIME = 60;	// Duration of simulation in seconds
+int NUM_PHILOSOPHERS; 	// Number of philosophers
+int num_philosophers_eating = 0;	// Numbers of philosophers eating
 
 // Structure that represents fork
 struct Fork
@@ -65,14 +67,20 @@ void philosopher(int id, atomic<bool>& stop)
 				{
 					try_to_eat = false;
 					num_philosophers_eating++;
+					{
+						lock_guard<mutex> lock(console_mutex);
+						cout << "Philosopher " << id << " can eat." << endl;
+						cout << "Philosophers eating: " << num_philosophers_eating << endl;
+					}
+					break;
 				}
 			}
-			this_thread::sleep_for(chrono::seconds(1));
-		}
-
-		{
-			lock_guard<mutex> lock(console_mutex);
-			cout << "Philosophers eating: " << num_philosophers_eating << endl;
+			{
+				lock_guard<mutex> lock(console_mutex);
+				cout << "Philosophers eating: " << num_philosophers_eating << endl;
+				cout << "Philosopher " << id << " is denied to eat." << endl;
+			}
+			this_thread::sleep_for(chrono::seconds(2));
 		}
 
         while (!(hasLeftFork && hasRightFork))
@@ -125,7 +133,6 @@ void philosopher(int id, atomic<bool>& stop)
 		{
             lock_guard<mutex> lock(console_mutex);
             cout << "Philosopher " << id << " finished eating." << endl;
-			cout << "Philosophers eating: " << num_philosophers_eating << endl;
         }
 
         // Release forks
@@ -140,8 +147,26 @@ void philosopher(int id, atomic<bool>& stop)
     }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc < 2)
+    {
+        cerr << "Usage: " << argv[0] << " <number_of_philosophers>" << endl;
+        return 1;
+    }
+
+    NUM_PHILOSOPHERS = atoi(argv[1]);
+    if (NUM_PHILOSOPHERS <= 0)
+    {
+        cerr << "Number of philosophers must be a positive integer." << endl;
+        return 1;
+    }
+	{
+		lock_guard<mutex> lock(console_mutex);
+		cout << "Number of philosophers set: " << NUM_PHILOSOPHERS << endl;
+	}
+
+
     atomic<bool> stop(false);
 
     // Initialize forks using unique_ptr
@@ -158,16 +183,13 @@ int main()
         }
     }
 
-    // Let the philosophers run for a while
-    this_thread::sleep_for(chrono::seconds(30));
-
-    // Stop the philosophers
-    stop = true;
-
-    // Wait for all philosophers to finish
-    for (auto& ph : philosophers) {
-        ph.join();
-    }
+    // Stop the philosophers - if you do not want them to run infinitely uncomment lines below
+	// this_thread::sleep_for(chrono::seconds(TIME));
+    // stop = true;
+    // // Wait for all philosophers to finish
+    // for (auto& ph : philosophers) {
+    //     ph.join();
+    // }
 
     return 0;
 }

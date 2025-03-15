@@ -12,7 +12,7 @@ Filozof reprezentowany jest przez funkcję, która wywoływana jest jako wątek.
 (Zostanie opisane po rozwiązanu problemu)
 
 
-Wątki: filozofowie
+Wątki: Filozofowie
 
 Sekcje krytyczne: podnoszenie i opuszczanie widelców
 
@@ -23,5 +23,5 @@ Sekcje krytyczne: podnoszenie i opuszczanie widelców
 2. Pobierz ten projekt.
 3. Znajdź katalog projektu "DiningPhilosophersProblem" w terminalu.
 4. Skompiluj kod przy użyciu g++: `g++ main.cpp -o main.exe`
-5. Uruchom program: `.\main.exe`
+5. Uruchom program z podaną liczbą filozofów n: `.\main.exe n`
 6. Alternatywnie (Linux): Możesz wykorzystać komendę "make" (mam nadzieję).
