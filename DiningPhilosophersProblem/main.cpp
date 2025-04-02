@@ -9,7 +9,7 @@
 
 using namespace std;
 
-const int TIME = 60;	// Duration of simulation in seconds
+const int TIME = 360;	// Duration of simulation in seconds
 int NUM_PHILOSOPHERS; 	// Number of philosophers
 int num_philosophers_eating = 0;	// Numbers of philosophers eating
 
@@ -184,12 +184,12 @@ int main(int argc, char* argv[])
     }
 
     // Stop the philosophers - if you do not want them to run infinitely uncomment lines below
-	// this_thread::sleep_for(chrono::seconds(TIME));
-    // stop = true;
-    // // Wait for all philosophers to finish
-    // for (auto& ph : philosophers) {
-    //     ph.join();
-    // }
+	this_thread::sleep_for(chrono::seconds(TIME));
+    stop = true;
+    //Wait for all philosophers to finish
+    for (auto& ph : philosophers) {
+        ph.join();
+    }
 
     return 0;
 }
