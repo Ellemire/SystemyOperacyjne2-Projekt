@@ -28,7 +28,6 @@ def wave_manager():
             with wave_lock:
                 wave_ += 1
                 game_state.wave = wave_
-                print(f"Fala {game_state.wave} {wave_}")
         time.sleep(0.1)
     while running_:
         with enemy_lock:

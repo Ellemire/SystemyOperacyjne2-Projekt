@@ -76,7 +76,6 @@ while running:
     # # Synchronizacja numeru fali
     with wave_lock:
         current_wave = game_state.wave
-        print(current_wave)
 
     # Rysowanie HUD
     draw_hud(screen, font, money, lives, current_wave, waves, selected_tower_class)
@@ -94,5 +93,6 @@ while running:
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2))
             pygame.display.flip()
             time.sleep(4)
+            break
 
 pygame.quit()
