@@ -1,6 +1,7 @@
 import time
 from settings import *
 from map import MAP
+import game_state
 from game_state import *
 from enemy import *
 from tower import *
@@ -72,15 +73,9 @@ while running:
         for projectile in projectiles:
             projectile.draw()
 
-    # screen.blit(font.render(f"Money: {money}", True, WHITE), (10, 10))
-    # screen.blit(font.render(f"Lives: {lives}", True, WHITE), (10, 30))
-    # screen.blit(font.render(f"Wave: {min(wave, len(waves))}/{len(waves)}", True, WHITE), (WIDTH - 150, 10))
-    # screen.blit(font.render(f"1: Fast ({FastTower.cost})  2: Sniper ({SniperTower.cost})", True, WHITE), (10, 50))
-    # screen.blit(font.render(f"Selected: {'Fast' if selected_tower_class == FastTower else 'Sniper'}", True, WHITE), (10, 70))
-
-    # Synchronizacja numeru fali
+    # # Synchronizacja numeru fali
     with wave_lock:
-        current_wave = wave
+        current_wave = game_state.wave
         print(current_wave)
 
     # Rysowanie HUD
@@ -92,9 +87,9 @@ while running:
     pygame.display.flip()
 
     with game_lock:
-        if game_won or game_over:
-            screen.fill((0, 100, 0) if game_won else (100, 0, 0))
-            msg = "Wygrałeś wszystkie fale!" if game_won else "Przegrałeś!"
+        if game_state.game_won or game_over:
+            screen.fill((0, 100, 0) if game_state.game_won else (100, 0, 0))
+            msg = "Wygrałeś wszystkie fale!" if game_state.game_won else "Przegrałeś!"
             text = font.render(msg, True, WHITE)
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2))
             pygame.display.flip()

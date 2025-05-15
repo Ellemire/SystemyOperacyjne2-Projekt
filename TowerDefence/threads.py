@@ -1,6 +1,7 @@
 import time
 import threading
-from game_state import *
+from game_state import wave_lock, waves, enemies, enemy_lock,  towers, projectile_lock, projectiles, game_lock, running
+import game_state
 
 # === THREAD FUNCTIONS ===
 def spawn_wave(wave_index):
@@ -12,26 +13,29 @@ def spawn_wave(wave_index):
             time.sleep(0.5)
 
 def wave_manager():
-    global wave, game_won, running
+    running_ = game_state.running
+    with wave_lock:
+        wave_ = game_state.wave
     total_waves = len(waves)
-    while running and wave <= total_waves:
+    while running_ and wave_ <= total_waves:
         if not enemies:
-            spawn_wave(wave - 1)
-            while running:
+            spawn_wave(wave_ - 1)
+            while running_:
                 with enemy_lock:
                     if not enemies:
                         break
                 time.sleep(0.5)
             with wave_lock:
-                wave += 1
-                print(f"Fala {wave}")
+                wave_ += 1
+                game_state.wave = wave_
+                print(f"Fala {game_state.wave} {wave_}")
         time.sleep(0.1)
-    while running:
+    while running_:
         with enemy_lock:
             if not enemies:
                 with game_lock:
-                    game_won = True
-                    running = False
+                    game_state.game_won = True
+                    game_state.running = False
                     break
         time.sleep(0.5)
 
