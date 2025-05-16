@@ -83,12 +83,29 @@ Blokady zapewniają **atomiczność** operacji oraz chronią przed tzw. **race c
 
 ---
 
-## 🛠️ Technologie
+## Technologie
 
 - Python 3.10+
 - [Pygame](https://www.pygame.org/)  
 - Programowanie obiektowe
 - Wątki (threading)
+
+## Struktura katalogów
+
+```
+TowerDefence/
+├── assets.py           # Ładowanie grafik i animacji
+├── enemy.py            # Klasy przeciwników i ich logika ruchu
+├── game.py             # Początkowa wersja projektu
+├── game_state.py       # Globalny stan gry (pieniądze, fale, zamki itd.)
+├── HUD.py              # Wyświetlanie interfejsu HUD i podglądu wieży
+├── main.py             # Główna logika gry (pętla, renderowanie, interakcje)
+├── map.py              # Definicje map i ścieżek
+├── pathfinding.py      # Generowanie trasy dla przeciwników
+├── settings.py         # Ustawienia gry (stałe, kolory, ekran)
+├── threads.py          # Logika wątków (pociski, wieże, fale)
+└── tower.py            # Klasy wież i pocisków
+```
 
 ## Jak uruchomić projekt?
 
@@ -117,21 +134,3 @@ Blokady zapewniają **atomiczność** operacji oraz chronią przed tzw. **race c
    ```bash
    python main.py
    ```
-
-## Struktura katalogów
-
-```
-TowerDefence/
-├── assets.py           # Ładowanie grafik i animacji
-├── enemy.py            # Klasy przeciwników i ich logika ruchu
-├── game.py             # Początkowa wersja projektu
-├── game_state.py       # Globalny stan gry (pieniądze, fale, zamki itd.)
-├── HUD.py              # Wyświetlanie interfejsu HUD i podglądu wieży
-├── main.py             # Główna logika gry (pętla, renderowanie, interakcje)
-├── map.py              # Definicje map i ścieżek
-├── pathfinding.py      # Generowanie trasy dla przeciwników
-├── settings.py         # Ustawienia gry (stałe, kolory, ekran)
-├── threads.py          # Logika wątków (pociski, wieże, fale)
-└── tower.py            # Klasy wież i pocisków
-
-```
