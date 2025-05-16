@@ -10,7 +10,7 @@ def draw_hud(screen, font, money, lives, wave, waves, selected_tower_class):
     screen.blit(font.render(f"Wave: {min(wave, len(waves))}/{len(waves)}", True, WHITE), (WIDTH - 200, 10))
 
     # Dostępne wieże i ich koszt
-    screen.blit(font.render(f"1: Base ({BaseTower.cost})  3: Fast ({FastTower.cost})  3: Sniper ({SniperTower.cost})", True, WHITE), (10, 50))
+    screen.blit(font.render(f"1: Base ({BaseTower.cost})  2: Fast ({FastTower.cost})  3: Sniper ({SniperTower.cost})", True, WHITE), (10, 50))
 
     # Wybrana wieża
     selected_name = selected_tower_class.__name__.replace("Tower", "")
